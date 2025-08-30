@@ -1,0 +1,75 @@
+import allure
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.action_chains import ActionChains as AC
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+
+
+class BaseElement:
+    def __init__(self, browser: WebDriver, name, how, what):
+        self.browser = browser
+        self.name = name
+        self.locator = how, what
+        self.wait = WebDriverWait(browser, timeout=15, poll_frequency=1)
+
+    def get_element(self):
+        self.wait.until(EC.presence_of_element_located(self.locator))
+        return self.browser.find_element(*self.locator)
+
+    def get_elements(self):
+        self.wait.until(EC.presence_of_element_located(self.locator))
+        return self.browser.find_elements(*self.locator)
+
+    def get_element_by_text(self, text):
+        with allure.step(f'Поиск элемента: {text}'):
+            # self.wait.is_element_visible(By.XPATH, f"//*[text()='{text}']")
+            self.wait.until(EC.visibility_of_element_located((By.XPATH, f"//*[text()='{text}']")))
+            element = self.browser.find_element(By.XPATH, f"//*[text()='{text}']")
+
+        return element
+
+    def select_element_by_text(self, text):
+        with allure.step(f'Выбрать элемент: {text}'):
+            self.wait.until(EC.visibility_of_element_located((By.XPATH, f"//*[text()='{text}']")))
+            element = self.browser.find_element(By.XPATH, f"//*[text()='{text}']")
+            self.wait.until(EC.element_to_be_clickable(element))
+            element.click()
+
+    def click(self, element=None):
+        element = element if element else self.get_element()
+        with allure.step(f"Клик по: {self.name}"):
+            self.wait.until(EC.element_to_be_clickable(element))
+            element.click()
+
+    def double_click(self, element=None):
+        element = element if element else self.get_element()
+        with allure.step(f"Двойной клик по: {self.name}"):
+            self.wait.until(EC.element_to_be_clickable(element))
+            action = AC(self.browser)
+            action.double_click(element).perform()
+
+    def submit(self, element=None):
+        with allure.step('Подтвердить'):
+            element = element if element else self.get_element()
+            with allure.step(f"Подтвердить ввод в {self.name}"):
+                element.submit()
+
+    def scroll_to_element(self, element=None):
+        element = element if element else self.get_element()
+        self.wait.until(EC.visibility_of_element_located(element))
+        action = AC(self.browser)
+        action.scroll_to_element(element).perform()
+
+    def move_to_element(self, element=None):
+        element = element if element else self.get_element()
+        self.wait.until(EC.visibility_of_element_located(element))
+        action = AC(self.browser)
+        action.move_to_element(element)
+        action.perform()
+
+    def get_text_of_element(self, element=None):
+        element = element if element else self.get_element()
+        self.wait.until(EC.visibility_of_element_located(element))
+
+        return element.text
