@@ -3,8 +3,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains as AC
 from selenium.webdriver.support import expected_conditions as EC
-from utils.project_ec import Wait
 from selenium.webdriver.common.keys import Keys
+from assertions.base_assertions import BaseAssertions
 
 
 class BasePage:
@@ -12,6 +12,7 @@ class BasePage:
     def __init__(self, browser: WebDriver):
         self.browser = browser
         self.wait = WebDriverWait(browser, timeout=15, poll_frequency=1)
+        self.base_assertions = BaseAssertions()
 
     def open(self):
         with allure.step(f'Открыть страницу: {self.PAGE_URL}'):

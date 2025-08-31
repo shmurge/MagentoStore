@@ -1,5 +1,7 @@
 import pytest
 import allure
+import os
+from dotenv import load_dotenv, set_key
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -36,7 +38,8 @@ def browser(request):
             browser = webdriver.Chrome(options=chrome_options)
         elif browser_name == "firefox":
             firefox_options = FirefoxOptions()
-            firefox_service = FirefoxService(executable_path="/snap/bin/geckodriver") #если сломается, убрать эту строку
+            firefox_service = FirefoxService(
+                executable_path="/snap/bin/geckodriver")  # если сломается, убрать эту строку
             firefox_options.add_argument("--disable-notifications")
             firefox_options.set_preference('intl.accept_languages', user_language)
             if headless:
@@ -46,7 +49,7 @@ def browser(request):
                     firefox_options.add_argument('--no-sandbox')
                     firefox_options.add_argument('--disable-dev-shm-usage')
             if github_actions:
-                browser = webdriver.Firefox(options=firefox_options, service=firefox_service) # и отсюда убрать service
+                browser = webdriver.Firefox(options=firefox_options, service=firefox_service)  # и отсюда убрать service
             else:
                 browser = webdriver.Firefox(options=firefox_options)
         else:
@@ -55,4 +58,14 @@ def browser(request):
     browser.maximize_window()
 
     yield browser
-    browser.close()
+    browser.quit()
+
+
+def set_env_key(key, value):
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(project_root, '.env')
+
+    load_dotenv(env_path)
+
+    os.environ[key] = value
+    set_key(env_path, key, value)
